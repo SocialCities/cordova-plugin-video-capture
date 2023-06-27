@@ -79,11 +79,6 @@ public class Capture extends CordovaPlugin {
     private static final int CAPTURE_PERMISSION_DENIED = 4;
     private static final int CAPTURE_NOT_SUPPORTED = 20;
 
-    private static final String[] storagePermissions = new String[]{
-        Manifest.permission.READ_EXTERNAL_STORAGE,
-        Manifest.permission.WRITE_EXTERNAL_STORAGE
-    };
-
     private boolean cameraPermissionInManifest;     // Whether or not the CAMERA permission is declared in AndroidManifest.xml
 
     private final PendingRequests pendingRequests = new PendingRequests();
@@ -230,6 +225,14 @@ public class Capture extends CordovaPlugin {
         return obj;
     }
 
+    private String[] getPermissionsList() {
+        if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            return new String[]{ Manifest.permission.CAMERA, Manifest.permission.READ_MEDIA_VIDEO };
+        } else {
+            return new String[]{Manifest.permission.CAMERA, Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE};
+        }
+    }
+
     private boolean isMissingPermissions(Request req, ArrayList<String> permissions) {
         ArrayList<String> missingPermissions = new ArrayList<>();
         for (String permission: permissions) {
@@ -247,11 +250,11 @@ public class Capture extends CordovaPlugin {
     }
 
     private boolean isMissingStoragePermissions(Request req) {
-        return isMissingPermissions(req, new ArrayList<>(Arrays.asList(storagePermissions)));
+        return isMissingPermissions(req, new ArrayList<>(Arrays.asList( getPermissionsList() )));
     }
 
     private boolean isMissingCameraPermissions(Request req) {
-        ArrayList<String> cameraPermissions = new ArrayList<>(Arrays.asList(storagePermissions));
+        ArrayList<String> cameraPermissions = new ArrayList<>(Arrays.asList( getPermissionsList() ));
         if (cameraPermissionInManifest) {
             cameraPermissions.add(Manifest.permission.CAMERA);
         }
